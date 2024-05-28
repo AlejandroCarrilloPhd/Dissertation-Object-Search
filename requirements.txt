@@ -1,0 +1,15 @@
+# Data manipulation and analysis
+pandas
+numpy
+
+# Mixed effect regression
+statsmodels
+scipy
+
+# Visualization
+matplotlib
+seaborn
+
+# Jupyter Notebook
+jupyter
+
