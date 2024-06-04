@@ -1,0 +1,60 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+# Creating the cleaning file based on my original R script 
+# Libraries 
+import pandas as pd
+
+# Testing the function
+# Import the csv file and call it df
+df = pd.read_csv('C:/Users/alexc/OneDrive/Desktop/Dissertation-Object-Search/Study 1/data/10322_VAST1_2023-11-01_14h13.15.208.csv')
+# View the excel_file's sheet names
+print(df.head(5))
+
+#### SECTION 1: Long Form ####
+
+# Start by writing the function to do prepare the data
+def longformVASTcleaning(data_original):
+    # copy the original data to a new dataframe
+    df = data_original
+    # remove practice trials 
+    df.drop(range(0,12), inplace=True)
+    # Remove the final text row
+    df.drop(372, inplace=True )
+    # Select specific variables for analysis
+    column_names = (
+        "Dstim_1_image", "Dstim_1_position",
+    "Dstim_2_image", "Dstim_2_position",
+    "Dstim_3_image", "Dstim_3_position",
+    "Dstim_4_image", "Dstim_4_position",
+    "Dstim_5_image", "Dstim_5_position",
+    "Dstim_6_image", "Dstim_6_position",
+    "Dstim_7_image", "Dstim_7_position",
+    "Dstim_8_image", "Dstim_8_position",
+    "Dstim_9_image", "Dstim_9_position",
+    "Dstim_10_image", "Dstim_10_position",
+    "Dstim_11_image", "Dstim_11_position",
+    "Dstim_12_image", "Dstim_12_position",
+    "Dstim_13_image", "Dstim_13_position",
+    "Dstim_14_image", "Dstim_14_position",
+    "Dstim_15_image", "Dstim_15_position",
+    "Dstim_16_image", "Dstim_16_position",
+    "Dstim_17_image", "Dstim_17_position",
+    "Dstim_18_image", "Dstim_18_position",
+    "Dstim_19_image", "Dstim_19_position",
+    "target_object", "target_object_position",
+    "target_type", "pretrial_text",
+    "setSize", "response",
+    "rt", "correct",
+    "face", "race",
+    "condition_name", "block_order", "participant", "gridCheck",	"mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	"Dnum2_position","Dnum3_position"	
+    )
+    return df
+    pass 
+
+longformVASTcleaning(df)
+```
