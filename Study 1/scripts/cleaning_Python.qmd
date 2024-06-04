@@ -12,12 +12,13 @@ import pandas as pd
 # Testing the function
 # Import the csv file and call it df
 df = pd.read_csv('C:/Users/alexc/OneDrive/Desktop/Dissertation-Object-Search/Study 1/data/10322_VAST1_2023-11-01_14h13.15.208.csv')
-# View the excel_file's sheet names
-print(df.head(5))
+
 
 #### SECTION 1: Long Form ####
 
-# Start by writing the function to do prepare the data
+# Start by writing the function to do long form cleaning 
+# WITH EACH ROW REPRESENTING A SEPARATE TRIAL, SUITABLE FOR JUDD,
+# WESTFALL, & KENNY 2012 RANDOM FACTOR ANALYSIS.
 def longformVASTcleaning(data_original):
     # copy the original data to a new dataframe
     df = data_original
@@ -26,8 +27,8 @@ def longformVASTcleaning(data_original):
     # Remove the final text row
     df.drop(372, inplace=True )
     # Select specific variables for analysis
-    column_names = (
-        "Dstim_1_image", "Dstim_1_position",
+    # Extract the selected columns and assign to a new dataframe
+    df2 = df[["Dstim_1_image", "Dstim_1_position",
     "Dstim_2_image", "Dstim_2_position",
     "Dstim_3_image", "Dstim_3_position",
     "Dstim_4_image", "Dstim_4_position",
@@ -51,9 +52,15 @@ def longformVASTcleaning(data_original):
     "setSize", "response",
     "rt", "correct",
     "face", "race",
-    "condition_name", "block_order", "participant", "gridCheck",	"mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	"Dnum2_position","Dnum3_position"	
-    )
-    return df
+    "condition_name", "block_order", "participant", "gridCheck",	"mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	"Dnum2_position","Dnum3_position"]]
+    # Recode reaction time from seconds to milliseconds
+    df2['rt'] = (df2['rt'] * 1000).round(0)
+
+    # Create additional variables for error analysis and time restrictions
+    # Mark reaction times less than 300ms as NA(considred too quick)
+    df2['rt2'] = 
+
+    return df2
     pass 
 
 longformVASTcleaning(df)
