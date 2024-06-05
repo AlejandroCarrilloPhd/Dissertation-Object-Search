@@ -8,6 +8,7 @@ format: html
 # Creating the cleaning file based on my original R script 
 # Libraries 
 import pandas as pd
+import numpy as np 
 
 # Testing the function
 # Import the csv file and call it df
@@ -57,9 +58,12 @@ def longformVASTcleaning(data_original):
     df2['rt'] = (df2['rt'] * 1000).round(0)
 
     # Create additional variables for error analysis and time restrictions
-    # Mark reaction times less than 300ms as NA(considred too quick)
-    df2['rt2'] = 
-
+    # Mark reaction times less than 300ms as NA(considered too quick)
+    df2['rt2'] = np.where(df2['rt'] < 300, np.nan, df2['rt'])
+    # Mark incorrect trials as NA in reaction time
+    df2['rt3'] = np.where(df2['correct'] == "FALSE", np.nan, df2['rt2'])
+    # Mark reaction times over 9999ms as NA (considered too long)
+    df2['rt4'] = np.where(df2['rt3'] < 300, np.nan, df2['rt'])
     return df2
     pass 
 
