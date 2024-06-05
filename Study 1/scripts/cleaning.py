@@ -15,7 +15,7 @@ df = pd.read_csv('C:/Users/alexc/OneDrive/Desktop/Dissertation-Object-Search/Stu
 # WESTFALL, & KENNY 2012 RANDOM FACTOR ANALYSIS.
 def longformVASTcleaning(data_original):
     # copy the original data to a new dataframe
-    df = data_original
+    df = data_original.copy()
     # remove practice trials 
     df.drop(range(0,12), inplace=True)
     # Remove the final text row
@@ -46,7 +46,9 @@ def longformVASTcleaning(data_original):
     "setSize", "response",
     "rt", "correct",
     "face", "race",
-    "condition_name", "block_order", "participant", "gridCheck",	"mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	"Dnum2_position","Dnum3_position"]]
+    "condition_name", "block_order", "participant", "gridCheck",	
+    "mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	
+    "Dnum2_position","Dnum3_position"]].copy()
     # Recode reaction time from seconds to milliseconds
     df2['rt'] = (df2['rt'] * 1000).round(0)
 
@@ -74,4 +76,3 @@ def longformVASTcleaning(data_original):
     return df2
     pass 
 
-longformVASTcleaning(df)
