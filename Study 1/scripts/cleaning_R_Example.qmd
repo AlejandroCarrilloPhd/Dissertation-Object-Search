@@ -1,0 +1,221 @@
+---
+title: "cleaning_VAST1"
+format:
+  html:
+    echo: false
+    warning: false
+    toc: true
+    code-fold: true
+    embed-resources: true
+    theme: united 
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+rm(list=ls()) 
+
+#load required packages:\
+library(reshape) #for cast
+library(reshape2) #for melt
+library(car) #for recode
+library(plyr) #for ddply
+library(readxl)
+library(data.table)
+library(readr)
+
+```
+
+# Section 1: PREPARE DATA IN "LONG FORM"
+
+WITH EACH ROW REPRESENTING A SEPARATE TRIAL, SUITABLE FOR JUDD,
+WESTFALL, & KENNY 2012 RANDOM FACTOR ANALYSIS.
+
+```{r}
+# Define a function to clean and prepare the dataset
+longformVASTcleaning <- function(data.original) {
+  # Copy the original data to a new dataframe
+  df <- data.original
+  
+  # Remove practice trials (first 12 rows)
+  df <- df[-(1:12),]
+  
+  # Remove the final text row
+  df <- df[-361,]
+  
+  # Select specific variables for analysis
+  column_names <- c(
+    "Dstim_1_image", "Dstim_1_position",
+  "Dstim_2_image", "Dstim_2_position",
+  "Dstim_3_image", "Dstim_3_position",
+  "Dstim_4_image", "Dstim_4_position",
+  "Dstim_5_image", "Dstim_5_position",
+  "Dstim_6_image", "Dstim_6_position",
+  "Dstim_7_image", "Dstim_7_position",
+  "Dstim_8_image", "Dstim_8_position",
+  "Dstim_9_image", "Dstim_9_position",
+  "Dstim_10_image", "Dstim_10_position",
+  "Dstim_11_image", "Dstim_11_position",
+  "Dstim_12_image", "Dstim_12_position",
+  "Dstim_13_image", "Dstim_13_position",
+  "Dstim_14_image", "Dstim_14_position",
+  "Dstim_15_image", "Dstim_15_position",
+  "Dstim_16_image", "Dstim_16_position",
+  "Dstim_17_image", "Dstim_17_position",
+  "Dstim_18_image", "Dstim_18_position",
+  "Dstim_19_image", "Dstim_19_position",
+  "target_object", "target_object_position",
+  "target_type", "pretrial_text",
+  "setSize", "response",
+  "rt", "correct",
+  "face", "race",
+  "condition_name", "block_order", "participant", "gridCheck",	"mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	"Dnum2_position","Dnum3_position"	
+  )
+  
+  # Extract the selected columns and assign to a new dataframe
+  df2 <- df[, column_names]
+
+  # Recode reaction time from seconds to milliseconds
+  df2$rt <- round(df2$rt * 1000, digits = 0)
+
+  # Create additional variables for error analysis and time restrictions
+  # Mark reaction times less than 300ms as NA (considered too quick)
+  df2$rt2 <- ifelse(df2$rt < 300, NA, df2$rt)
+
+  # Mark incorrect trials as NA in reaction time
+  df2$rt3 <- ifelse(df2$correct == "FALSE", NA, df2$rt2)
+
+  # Mark reaction times over 9999ms as NA (considered too long)
+  df2$rt4 <- ifelse(df2$rt3 > 9999, NA, df2$rt3)
+
+  # Count the number of timeouts (reaction time over 10000ms)
+  df2$number_timeouts <- length(subset(df2$rt, df2$rt > 10000))
+
+  # Mark participants with excessive timeouts (over 1/8 of total 360 trials)
+  df2$over_timeouts <- ifelse(df2$number_timeouts > 45, 1, 0)
+
+  # Count the number of errors
+  df2$number_errors <- sum(df2$correct == "FALSE")
+
+  # Count the number of mouse selection errors
+  df2$mouse_number_errors <- sum(df2$mouseCorr == "FALSE", na.rm = TRUE)
+
+  # Reorder columns for better data organization
+  all_columns_df2 <- colnames(df2)
+  dstim_columns_df2 <- grep("^Dstim", all_columns_df2, value = TRUE)
+  non_dstim_columns_df2 <- setdiff(all_columns_df2, c("participant", dstim_columns_df2))
+  ordered_columns_df2 <- c("participant", non_dstim_columns_df2, dstim_columns_df2)
+  df2 <- df2[, ordered_columns_df2]
+
+  # Rename the cleaned dataframe for clarity
+  long_form <- df2
+
+}
+
+```
+
+
+## long form cleaning
+
+The next part of the script assumes all your data are separate .csv
+files in a single folder, WITH NO OTHER FILES IN THAT FOLDER! If you
+have other files in the data folder, the code below will not work.
+
+```{r}
+#set working directory to be the directory containing the data files
+setwd("C:/Users/alexc/OneDrive/Desktop/LetsDissertate/Study1_Analysis/VAST1")
+#Get a list of the separate subject data files in your folder:
+file.list<-list.files(path="C:/Users/alexc/OneDrive/Desktop/LetsDissertate/Study1_Analysis/VAST1")
+#Create list of data frames from list of data files in folder:
+lapply(file.list,read.csv, na.strings="NA", header=T, sep=",")->data.list
+#Apply function to each data frame in list:
+lapply(data.list, longformVASTcleaning)->data_cleaned
+
+#Bind all together into a long-form. This is the form acceptable for  multilevel modeling treating stimuli as random factors (as recommended by Judd et al., 2012, JPSP). 
+long_form_data_final<-rbindlist(data_cleaned)
+
+#This final command saves the output as a file called "finalLONGformSHOOTERdata.csv" in the directory specified below. Note that if you write the .csv file to the same folder containing all your data files, you will need to delete the file before trying to run the script again (otherwise it will try to read the final data file as a subject's data):
+setwd("C:/Users/alexc/OneDrive/Desktop/LetsDissertate/Study1_Analysis")
+
+# lets do some post cleaning and tracking 
+# At the very least I likely want to remove people with about 100 of the 360 of the responses incorrect and store them in a list. 
+df <- long_form_data_final
+
+# Create a new data frame with those who have more than 100 errors
+df_removed <- subset(df, number_errors > 100)
+
+# Now remove these from the original data frame
+df <- subset(df, number_errors <= 100)
+
+write.csv(longform_Filtered, file="filteredQLONGformVAST1.csv", row.names=FALSE)
+
+
+```
+
+# short form 
+
+```{r}
+library(dplyr)
+library(tidyr)
+
+# Assuming your data is loaded into a data frame called 'data'
+
+# Group by participant and the conditions
+grouped_data <- df %>%
+  group_by(participant, setSize, race, target_type) %>%
+  summarise(
+    num_correct = sum(correct, na.rm = TRUE),               # Count of correct responses
+    avg_mouseCorr = mean(mouseCorr, na.rm = TRUE),          # Average of mouseCorr
+    avg_rt = mean(rt, na.rm = TRUE)                         # Average response time
+  ) %>%
+  ungroup()
+
+# To pivot the data so each condition is in a separate column, we'll first need to create a unique identifier for each condition
+grouped_data <- grouped_data %>%
+  mutate(condition_id = interaction(setSize, race, target_type, sep = "_"))
+
+# Now we can pivot the data to wide format
+wide_data <- grouped_data %>%
+  pivot_wider(
+    id_cols = participant,
+    names_from = condition_id,
+    values_from = c(num_correct, avg_mouseCorr, avg_rt)
+  )
+
+# View the resulting wide data frame
+print(wide_data)
+
+write.csv(wide_data, file="filteredSHORTformVAST1.csv", row.names=FALSE)
+
+```
+
+## merge qualtrics data
+```{r}
+Diss_Study1_nov25 <- read_csv("qualtrics/Diss_Study1_nov25.csv")
+
+
+
+# Perform a full join to keep all participants
+merged_data <- merge(wide_data, Diss_Study1_nov25, by = "participant", all = TRUE)
+
+# If you want to perform a left join and keep all participants from df1
+left_join <- merge(wide_data, Diss_Study1_nov25, by = "participant", all.x = TRUE)
+
+# To identify participants from df1 that don't have a match in df2
+unmatched_in_df1 <- subset(left_join, is.na(left_join$consent))
+print(unmatched_in_df1$participant)
+#1] "\n74777(2)" "11392"      "19920"      "41859"      "57555"      "62337"      "94874(2)"  
+
+# Remove participants that are unmatched
+filtered_data <- left_join %>%
+  filter(!participant %in% unmatched_in_df1$participant)
+
+longform_Filtered <- long_form_data_final %>%
+  filter(!participant %in% unmatched_in_df1$participant)
+
+
+write.csv(left_join, file="Q_SHORTformVAST1.csv", row.names=FALSE)
+```
+

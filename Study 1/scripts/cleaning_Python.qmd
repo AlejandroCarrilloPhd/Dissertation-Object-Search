@@ -1,3 +1,10 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
 # Creating the cleaning file based on my original R script 
 # Libraries 
 import pandas as pd
@@ -15,7 +22,7 @@ df = pd.read_csv('C:/Users/alexc/OneDrive/Desktop/Dissertation-Object-Search/Stu
 # WESTFALL, & KENNY 2012 RANDOM FACTOR ANALYSIS.
 def longformVASTcleaning(data_original):
     # copy the original data to a new dataframe
-    df = data_original.copy()
+    df = data_original
     # remove practice trials 
     df.drop(range(0,12), inplace=True)
     # Remove the final text row
@@ -46,9 +53,7 @@ def longformVASTcleaning(data_original):
     "setSize", "response",
     "rt", "correct",
     "face", "race",
-    "condition_name", "block_order", "participant", "gridCheck",	
-    "mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	
-    "Dnum2_position","Dnum3_position"]].copy()
+    "condition_name", "block_order", "participant", "gridCheck",	"mouseRT",	"mouseCorr",	"Tnum_position",	"Dnum_position",	"Dnum2_position","Dnum3_position"]]
     # Recode reaction time from seconds to milliseconds
     df2['rt'] = (df2['rt'] * 1000).round(0)
 
@@ -58,21 +63,9 @@ def longformVASTcleaning(data_original):
     # Mark incorrect trials as NA in reaction time
     df2['rt3'] = np.where(df2['correct'] == "FALSE", np.nan, df2['rt2'])
     # Mark reaction times over 9999ms as NA (considered too long)
-    df2['rt4'] = np.where(df2['rt3'] > 9999, np.nan, df2['rt3'])
-    # Count the number of timeouts (reaction time over 9999ms)
-    df2['number_timeouts'] = (df2['rt'] > 10000).sum()
-    # Mark participants with excessive timeouts (over 1/8 of total 360 trials)
-    df2['over_timeouts'] = np.where(df2['number_timeouts'] > 45, 1, 0)
-    # Count the number of errors
-    df2['number_errors'] = (df2['correct'] == "FALSE").sum()
-    # Count the numbers of mouse selection errors 
-    df2['mouse_number_errors'] = (df2['correct'] == "FALSE").sum()
-    # Reorder columns for better data organization 
-    all_columns_df2 = df2.columns.tolist()
-    dstim_columns_df2 = [col for col in all_columns_df2 if col.startswith('Dstim')]
-    non_dstim_columns_df2 = [col for col in all_columns_df2 if col != 'participant' and col not in dstim_columns_df2]
-    ordered_columns_df2 = ['participant'] + non_dstim_columns_df2 + dstim_columns_df2
-    df2 = df2[ordered_columns_df2]
+    df2['rt4'] = np.where(df2['rt3'] < 300, np.nan, df2['rt'])
     return df2
     pass 
 
+longformVASTcleaning(df)
+```
