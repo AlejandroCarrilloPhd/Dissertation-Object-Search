@@ -13,3 +13,6 @@ seaborn
 # Jupyter Notebook
 jupyter
 
+# Dashboard
+dash 
+plotly
