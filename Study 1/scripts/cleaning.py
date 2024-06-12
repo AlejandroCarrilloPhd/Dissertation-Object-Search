@@ -2,10 +2,10 @@
 # Libraries 
 import pandas as pd
 import numpy as np 
-
+import os 
 # Testing the function
 # Import the csv file and call it df
-df = pd.read_csv('C:/Users/alexc/OneDrive/Desktop/Dissertation-Object-Search/Study 1/data/10322_VAST1_2023-11-01_14h13.15.208.csv')
+#df = pd.read_csv('C:/Users/Alejandro/OneDrive/Desktop/Dissertation-Object-Search/Study 1/data/10322_VAST1_2023-11-01_14h13.15.208.csv')
 
 
 #### SECTION 1: Long Form ####
@@ -74,5 +74,26 @@ def longformVASTcleaning(data_original):
     ordered_columns_df2 = ['participant'] + non_dstim_columns_df2 + dstim_columns_df2
     df2 = df2[ordered_columns_df2]
     return df2
-    pass 
+
+# Applying the function to the data 
+# Directory containing the CSV files
+input_directory = 'C:/Users/Alejandro/OneDrive/Desktop/Dissertation-Object-Search/Study 1/data'
+
+# Get list of CSV files in the directory
+file_list = [os.path.join(input_directory, file) for file in os.listdir(input_directory) if file.endswith('.csv')]
+
+# Read CSV files into DataFrames
+data_list = map(pd.read_csv, file_list)
+
+# Apply the cleaning function to each DataFrame
+cleaned_data_list = map(longformVASTcleaning, data_list)
+
+# Concatenate all cleaned DataFrames into one
+combined_data = pd.concat(cleaned_data_list, ignore_index=True)
+
+# Save the combined DataFrame to a CSV file
+output_file_path = 'C:/Users/Alejandro/OneDrive/Desktop/Dissertation-Object-Search/Study 1/combined_data.csv'
+combined_data.to_csv(output_file_path, index=False)
+
+print("Data cleaning and combination complete.")
 
